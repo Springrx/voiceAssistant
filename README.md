@@ -11,3 +11,8 @@
 # 开发
 1. 确认后端 server 服务启动
 2. `yarn start`
+
+# todo
+[ ] 语音转写目前使用的方案是使用chrome内置的mediaDevices，识别后会将语音[一个包含wav文件的Blob二进制对象]发送到后端。
+[ ] 目前实现的是单轮对话，需要支持多轮对话
+[ ] 实现replay效果

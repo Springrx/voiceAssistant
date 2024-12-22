@@ -4,7 +4,7 @@ module.exports = function (app) {
   app.use(
     '/api',
     createProxyMiddleware({
-      target: 'https://10.177.44.94:9091',
+      target: 'https://85092b5e-3acc-481c-a51f-5ece138d3bef.mock.pstmn.io',
       secure: false,
       changeOrigin: true,
     })

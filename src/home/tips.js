@@ -7,7 +7,6 @@ function Tips({onButtonClick}) {
     const [quesList, setQuesList] = useState([]);
     useEffect(async () => {
         const res=await getQuesList();
-        console.log(res,'tip')
         setQuesList(res.questions);
     }, []);
     return <div className="tips">

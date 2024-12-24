@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Play, PauseOne } from '@icon-park/react';
-import { tipOnHome, introOnHome } from '../component/config';
-import { message } from 'antd';
+import { introOnHome } from '../component/config';
 import './home.css';
 import { microphone, stopIcon, avatar } from '../svg';
 import { getLLMResponse } from './service';
@@ -137,7 +136,6 @@ function VoiceAssistant() {
 
       <div className="feedback">
         {introOnHome}
-        {tipOnHome}
       </div>
 
       <div className="microphone" style={{ justifyContent: recordingState === "idle" ? 'center' : 'space-between' }}>

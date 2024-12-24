@@ -37,6 +37,7 @@
 }
 
 .feedback {
-    width: 80%;
+    margin-left: 5%;
+    margin-right: 5%;
     font-size: larger;
 }

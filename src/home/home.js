@@ -30,7 +30,6 @@ function VoiceAssistant() {
     recognition.interimResults = false; // 不返回临时结果
     recognition.continuous = true; // 连续识别
     recognition.onresult = async (event) => {
-      debugger
       let transcript = Array.from(event.results)
         .map(result => result[0].transcript)
         .join("");
@@ -49,7 +48,6 @@ function VoiceAssistant() {
 
     recognition.onend = async () => {
       console.log('enter onend');
-      debugger
       if (recordingStateRef.current === "idle" && transcriptionRef.current !== "") {
         const realTranscript = transcriptionRef.current
         console.log("uploadQuesToBackend Transcript:", realTranscript);
@@ -108,7 +106,6 @@ function VoiceAssistant() {
 
   // 停止转录
   const stopRecognition = () => {
-    debugger
     if (recognitionRef.current) {
       if (!isListeningRef.current) {
         recognitionRef.current.start();
@@ -121,7 +118,9 @@ function VoiceAssistant() {
   // 上传文本到后端
   const uploadQuesToBackend = async (transcript) => {
     try {
-      const feedback = getLLMResponse(transcript); // 调用后端接口获取响应
+      console.log("transcript", transcript);
+      const feedback = await getLLMResponse(transcript); // 调用后端接口获取响应
+      console.log("feedback", feedback);
       return feedback.feedback;
     } catch (error) {
       console.error("Error occur when get LLM response", error);
@@ -138,7 +137,7 @@ function VoiceAssistant() {
         {introOnHome}
       </div>
 
-      <div className="microphone" style={{ justifyContent: recordingState === "idle" ? 'center' : 'space-between' }}>
+      <div className="interaction-btn" style={{ justifyContent: recordingState === "idle" ? 'center' : 'space-between' }}>
         {recordingState === "idle" && (
           <div style={{ justifySelf: 'center' }} onClick={startRecognition}>{microphone}</div>
         )}

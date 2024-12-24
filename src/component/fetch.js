@@ -4,7 +4,7 @@ import { localeMessage } from './utils';
 export default function fetch(option = {}) {
   const { url, byteResponse = false, id,...rest } = option;
   return axios({
-    url:url,
+    url: url,
     withCredentials: true,
     headers: {
       'token': localStorage.getItem('token'),
@@ -13,7 +13,7 @@ export default function fetch(option = {}) {
   }).then(res => {    
     const { code, data } = res.data;
     const msg=res.data.message;
-    if (code === 200) {
+    if (code === 0) {
       return data;
     }
     if (byteResponse) {

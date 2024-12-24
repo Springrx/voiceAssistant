@@ -8,12 +8,12 @@
 
 .imagePlaceholder {
     margin-top: 20%;
-    height: 200px;
+    height: 250px;
     background-color: #eaeaea;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
     background-color: transparent;
 }
 
@@ -30,10 +30,14 @@
     align-items: center;
 }
 
-.microphone {
+.interaction-btn {
     margin-top: 10%;
     display: flex;
-    width: 60%;
+}
+
+.interaction-btn svg {
+    width: 150px !important;
+    height: 150px !important;
 }
 
 .feedback {

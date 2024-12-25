@@ -1,14 +1,9 @@
 import './home.css';
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Button, Popover } from 'antd';
-import { getQuesList } from './service';
-
-function Tips({onButtonClick}) {
-    const [quesList, setQuesList] = useState([]);
-    useEffect(async () => {
-        const res=await getQuesList();
-        setQuesList(res.questions);
-    }, []);
+import { tips } from '../component/config';
+function Tips({ onButtonClick }) {
+    const quesList = tips.questions;
     return <div className="tips">
         {quesList.map((item, index) => (
             <Popover
@@ -18,7 +13,7 @@ function Tips({onButtonClick}) {
                 title={item.question}
                 trigger="click"
             >
-                <Button onClick={()=>onButtonClick(item.answer)} style={{ marginTop: '20px', fontSize:'20px' }}>{item.question}</Button>
+                <Button onClick={() => onButtonClick(item.answer)} style={{ marginTop: '20px', fontSize: '20px' }}>{item.question}</Button>
             </Popover>
         ))}
     </div>

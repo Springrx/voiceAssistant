@@ -14,6 +14,8 @@ function VoiceAssistant() {
   const recognitionRef = useRef(null); // 语音识别实例引用
   const synth = window.speechSynthesis; // 语音合成实例
   const isListeningRef = useRef(false); // 是否正在监听
+  const [isSpeaking, setIsSpeaking] = useState(false); // 是否正在合成语音
+
   const handleTipButtonClick = (value) => {
     setResFromLLM(value); // 点击问题列表后语音说出问题的答案
   };
@@ -67,12 +69,15 @@ function VoiceAssistant() {
   useEffect(() => {
     if (resFromLLM !== '') {
       const utterance = new SpeechSynthesisUtterance(resFromLLM);
+      setIsSpeaking(true); // 开始合成语音
       utterance.onend = () => {
         setResFromLLM(''); // 语音播放完毕后清空
+        setIsSpeaking(false); // 结束合成语音
       };
       synth.speak(utterance);
     }
   }, [resFromLLM]);
+
   const updateRecordingState = (state) => {
     setRecordingState(state);
     recordingStateRef.current = state; // 同步更新 ref
@@ -132,33 +137,41 @@ function VoiceAssistant() {
       <div className="imagePlaceholder">
         {avatar}
       </div>
-
-      <div className="feedback">
+      {!isSpeaking && <div className="feedback">
         {introOnHome}
-      </div>
+      </div>}
 
-      <div className="interaction-btn" style={{ justifyContent: recordingState === "idle" ? 'center' : 'space-between' }}>
-        {recordingState === "idle" && (
-          <div style={{ justifySelf: 'center' }} onClick={startRecognition}>{microphone}</div>
-        )}
-        {recordingState === "recording" && (
-          <>
-            <PauseOne onClick={pauseRecognition} theme="filled" size="60" fill="#333333" />
-            <div onClick={stopRecognition}>
-              {stopIcon}
-            </div>
-          </>
-        )}
-        {recordingState === "paused" && (
-          <>
-            <Play onClick={resumeRecognition} theme="filled" size="60" fill="#333333" />
-            <div onClick={stopRecognition}>
-              {stopIcon}
-            </div>
-          </>
-        )}
-      </div>
-      <Tips onButtonClick={handleTipButtonClick} />
+      {/* 仅在不进行语音合成时显示交互按钮和提示 */}
+      {!isSpeaking ? (
+        <>
+          <div className="interaction-btn" style={{ justifyContent: recordingState === "idle" ? 'center' : 'space-between' }}>
+            {recordingState === "idle" && (
+              <div style={{ justifySelf: 'center' }} onClick={startRecognition}>{microphone}</div>
+            )}
+            {recordingState === "recording" && (
+              <>
+                <PauseOne onClick={pauseRecognition} theme="filled" size="60" fill="#333333" />
+                <div onClick={stopRecognition}>
+                  {stopIcon}
+                </div>
+              </>
+            )}
+            {recordingState === "paused" && (
+              <>
+                <Play onClick={resumeRecognition} theme="filled" size="60" fill="#333333" />
+                <div onClick={stopRecognition}>
+                  {stopIcon}
+                </div>
+              </>
+            )}
+          </div>
+          <Tips onButtonClick={handleTipButtonClick} />
+        </>
+      ) : <>
+        <div className="speaking-words">
+          {resFromLLM}
+        </div>
+      </>}
     </div>
   );
 }

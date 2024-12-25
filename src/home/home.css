@@ -45,3 +45,11 @@
     margin-right: 5%;
     font-size: larger;
 }
+
+.speaking-words {
+    margin: 10% 5% 5% 5%;
+    font-size: larger;
+    background-color: #eef2f9;
+    padding: 10px;
+    border-radius: 5px;
+}

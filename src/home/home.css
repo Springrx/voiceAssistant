@@ -56,12 +56,12 @@
 .feedback {
     margin-left: 5%;
     margin-right: 5%;
-    font-size: larger;
+    font-size: 1.8vw;
 }
 
 .speaking-words {
     margin: 10% 5% 5% 5%;
-    font-size: larger;
+    font-size: 1.8vw;
     background-color: #eef2f9;
     padding: 10px;
     border-radius: 5px;
@@ -89,7 +89,7 @@
     max-width: 70%;
     padding: 10px;
     border-radius: 10px;
-    font-size: 14px;
+    font-size: 1.8vw;
     word-wrap: break-word;
     margin-bottom: 8px;
   }

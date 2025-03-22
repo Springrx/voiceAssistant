@@ -1,13 +1,26 @@
 .container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     height: 100vh;
-    width: 100vw
+    width: 100%;
+    overflow: hidden
 }
 
+.assistant-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+}
+.full-width{
+    width: 100%;
+}
+.half-width{
+    width: 50%;
+}
 .imagePlaceholder {
-    margin-top: 20%;
+    margin-top: 10vh;
     height: 250px;
     background-color: #eaeaea;
     display: flex;
@@ -23,7 +36,7 @@
 }
 
 .tips {
-    margin-top: 20%;
+    margin-top: 5vh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -31,7 +44,7 @@
 }
 
 .interaction-btn {
-    margin-top: 10%;
+    margin-top: 5vh;
     display: flex;
 }
 
@@ -53,3 +66,44 @@
     padding: 10px;
     border-radius: 5px;
 }
+
+
+
+.conversation-container {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    width: 50%;
+    margin: auto;
+    height: 100%;
+    overflow-y: auto; /* 允许垂直滚动 */
+    scrollbar-width: none; /* Firefox 隐藏滚动条 */
+    -ms-overflow-style: none; /* IE/Edge 隐藏滚动条 */
+  }
+  /* Chrome、Safari 隐藏滚动条 */
+.conversation-container::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .message {
+    max-width: 70%;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 14px;
+    word-wrap: break-word;
+    margin-bottom: 8px;
+  }
+  
+  .message.left {
+    align-self: flex-start;
+    background-color: #e0e0e0;
+    color: #000;
+    border-top-left-radius: 0;
+  }
+  
+  .message.right {
+    align-self: flex-end;
+    background-color: #007bff;
+    color: white;
+    border-top-right-radius: 0;
+  }

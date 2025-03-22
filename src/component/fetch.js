@@ -5,7 +5,6 @@ export default function fetch(option = {}) {
   const { url, byteResponse = false, id,...rest } = option;
   return axios({
     url: url,
-    withCredentials: true,
     headers: {
       'token': localStorage.getItem('token'),
     },

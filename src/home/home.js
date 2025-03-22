@@ -5,20 +5,19 @@ import './home.css';
 import { microphone, stopIcon, avatar } from '../svg';
 import { getLLMResponse } from './service';
 import Tips from "./tips";
+import { Spin } from 'antd';
 
-function VoiceAssistant() {
-  const [recordingState, setRecordingState] = useState("idle"); // "idle", "recording", "paused"
-  const recordingStateRef = useRef("idle"); // 即时状态
-  const [resFromLLM, setResFromLLM] = useState(''); // 用于存储需要语音合成的数据
+function VoiceAssistant({history, setHistory, speech, setSpeech, speaking, stopSpeaking}) {
+  const [recordingState, setRecordingState] = useState("idle"); // 是否正在转录 "idle", "recording", "paused","waiting"(等待大模型回应中)
+  const recordingStateRef = useRef("idle"); // 转录的即时状态
   const transcriptionRef = useRef(""); // 用于存储转录后的文本
   const recognitionRef = useRef(null); // 语音识别实例引用
-  const synth = window.speechSynthesis; // 语音合成实例
   const isListeningRef = useRef(false); // 是否正在监听
-  const [isSpeaking, setIsSpeaking] = useState(false); // 是否正在合成语音
-
+  const [loading, setLoading] = useState(false);
   const handleTipButtonClick = (value) => {
-    setResFromLLM(value); // 点击问题列表后语音说出问题的答案
+    setSpeech(value); // 点击问题列表后语音说出问题的答案
   };
+
 
   // 初始化语音识别
   useEffect(() => {
@@ -34,14 +33,15 @@ function VoiceAssistant() {
     recognition.onresult = async (event) => {
       let transcript = Array.from(event.results)
         .map(result => result[0].transcript)
-        .join("");
-      const realTranscript = transcriptionRef.current + transcript;
-      if (recordingStateRef.current === "idle" && realTranscript !== '') {
+        .join("");  // 新识别到的文本
+      const realTranscript = transcriptionRef.current + transcript;  // 目前为止识别到的文本
+      if (recordingStateRef.current === "idle" && realTranscript !== '') { // 当不再录音，且有识别到的文本时
         console.log("uploadQuesToBackend Transcript:", realTranscript);
         const answer = await uploadQuesToBackend(realTranscript); // 上传文本到后端
+        setHistory(history => [...history, realTranscript, answer]); // 添加文本到历史问答
         transcriptionRef.current = ""; // 清空转录文本
         isListeningRef.current = false;
-        setResFromLLM(answer);
+        setSpeech(answer);
       }
       else {
         transcriptionRef.current = realTranscript; // 累加转录文本
@@ -54,9 +54,10 @@ function VoiceAssistant() {
         const realTranscript = transcriptionRef.current
         console.log("uploadQuesToBackend Transcript:", realTranscript);
         const answer = await uploadQuesToBackend(realTranscript); // 上传文本到后端
+        setHistory(history => [...history, realTranscript, answer]); // 添加文本到历史问答
         transcriptionRef.current = ""; // 清空转录文本
         isListeningRef.current = false;
-        setResFromLLM(answer);
+        setSpeech(answer);
       }
     }
     recognition.onerror = (event) => {
@@ -65,23 +66,11 @@ function VoiceAssistant() {
     recognitionRef.current = recognition;
   }, []);
 
-  // 合成语音
-  useEffect(() => {
-    if (resFromLLM !== '') {
-      const utterance = new SpeechSynthesisUtterance(resFromLLM);
-      setIsSpeaking(true); // 开始合成语音
-      utterance.onend = () => {
-        setResFromLLM(''); // 语音播放完毕后清空
-        setIsSpeaking(false); // 结束合成语音
-      };
-      synth.speak(utterance);
-    }
-  }, [resFromLLM]);
-
   const updateRecordingState = (state) => {
     setRecordingState(state);
     recordingStateRef.current = state; // 同步更新 ref
   };
+
   // 开始转录
   const startRecognition = () => {
     if (recognitionRef.current) {
@@ -124,56 +113,132 @@ function VoiceAssistant() {
   const uploadQuesToBackend = async (transcript) => {
     try {
       console.log("transcript", transcript);
+      setLoading(true);
       const feedback = await getLLMResponse(transcript); // 调用后端接口获取响应
       console.log("feedback", feedback);
       return feedback.feedback;
     } catch (error) {
       console.error("Error occur when get LLM response", error);
+    } finally{
+      setLoading(false); 
     }
   };
 
-  return (
-    <div className="container">
-      <div className="imagePlaceholder">
-        {avatar}
-      </div>
-      {!isSpeaking && <div className="feedback">
-        {introOnHome}
-      </div>}
+  //测试按钮
+  const testButton = async (text) => {
+    try {
+      const feedback = await getLLMResponse(text);
+      console.log("feedback", feedback);
+      setHistory([...history, text, feedback.feedback]);
+    } catch (error) {
+      console.error("Error occur when get LLM response", error)
+    }
+  }
 
-      {/* 仅在不进行语音合成时显示交互按钮和提示 */}
-      {!isSpeaking ? (
-        <>
-          <div className="interaction-btn" style={{ justifyContent: recordingState === "idle" ? 'center' : 'space-between' }}>
-            {recordingState === "idle" && (
-              <div style={{ justifySelf: 'center' }} onClick={startRecognition}>{microphone}</div>
-            )}
-            {recordingState === "recording" && (
-              <>
-                <PauseOne onClick={pauseRecognition} theme="filled" size="60" fill="#333333" />
-                <div onClick={stopRecognition}>
-                  {stopIcon}
-                </div>
-              </>
-            )}
-            {recordingState === "paused" && (
-              <>
-                <Play onClick={resumeRecognition} theme="filled" size="60" fill="#333333" />
-                <div onClick={stopRecognition}>
-                  {stopIcon}
-                </div>
-              </>
-            )}
-          </div>
-          <Tips onButtonClick={handleTipButtonClick} />
-        </>
-      ) : <>
-        <div className="speaking-words">
-          {resFromLLM}
+  return (
+      <div className={`assistant-container ${history.length === 0 ? 'full-width' : 'half-width'}`}>
+        <div className="imagePlaceholder">
+          {avatar}
         </div>
-      </>}
-    </div>
+        {!speaking && <div className="feedback">
+          {introOnHome}
+        </div>}
+
+        {/* 仅在不进行语音合成时显示交互按钮和提示 */}
+        {!speaking ? (
+          <>
+            <div className="interaction-btn" style={{ justifyContent: recordingState === "idle" ? 'center' : 'space-between' }}>
+              {recordingState === "idle" ? (
+                loading ? <Spin size="large"/> : (
+                  <div style={{ justifySelf: 'center' }} onClick={startRecognition}>{microphone}</div>
+                )
+              ) : null}
+              {recordingState === "recording" && (
+                <>
+                  <PauseOne onClick={pauseRecognition} theme="filled" size="60" fill="#333333" />
+                  <div onClick={stopRecognition}>
+                    {stopIcon}
+                  </div>
+                </>
+              )}
+              {recordingState === "paused" && (
+                <>
+                  <Play onClick={resumeRecognition} theme="filled" size="60" fill="#333333" />
+                  <div onClick={stopRecognition}>
+                    {stopIcon}
+                  </div>
+                </>
+              )}
+             
+            </div>
+            <Tips onButtonClick={handleTipButtonClick} />
+          </>
+        ) : <>
+          <div className="speaking-words">
+            {speech}
+          </div>
+          <div className="interaction-btn" style={{justifyContent: 'center'}}>
+              {speaking === true && (
+                <div onClick={stopSpeaking}>
+                  {stopIcon}
+                </div>
+              )}
+          </div>
+        </>}
+      </div>
   );
 }
 
-export default VoiceAssistant;
+function Conversation ({history, setSpeech}) {
+  return (
+    <div className = "conversation-container">
+      {history.map((message, index) => (
+        <div key={index} className={index % 2 === 0 ? "message left" : "message right"} onClick = {() => setSpeech(message)}>
+          {message}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function Home() {
+  const [history, setHistory] = useState([])  //聊天记录，voiceassistant改变它，conversation使用它
+  const [speech, setSpeech] = useState(''); // 用于存储需要语音合成的数据
+  const [speaking, setSpeaking] = useState(false); // AI小助手是否正在语音输出
+
+  const synth = window.speechSynthesis; // 语音合成实例
+  // 合成语音
+  useEffect(() => {
+    if (speech !== '') {
+      speechSynthesis.cancel(); // 清除可能正在播放的语音
+      const utterance = new SpeechSynthesisUtterance(speech);
+      setSpeaking(true);  // 开始语音输出
+      utterance.onend = () => {
+        setSpeech(''); // 语音播放完毕后清空
+        setSpeaking(false);  // 停止语音输出
+      };
+      synth.speak(utterance);
+    }
+  }, [speech]);
+  // 停止语音输出
+  const stopSpeaking = () => {
+    speechSynthesis.cancel();
+    setSpeaking(false);
+    setSpeech('');
+  }
+  return (
+    <div className = "container">      
+      <VoiceAssistant      
+        history = {history} setHistory = {setHistory} 
+        speech = {speech} setSpeech = {setSpeech}
+        speaking = {speaking} stopSpeaking = {stopSpeaking}
+        />
+       {history.length>0&&<Conversation 
+        history = {history} 
+        setSpeech = {setSpeech}
+        />}
+    </div>
+  )
+}
+
+export default Home;

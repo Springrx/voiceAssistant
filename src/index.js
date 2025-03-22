@@ -3,12 +3,12 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 import { Routes,Route, HashRouter } from 'react-router-dom';
-import VoiceAssistant from './home/home';
+import Home from './home/home';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <HashRouter>
   <Routes>
-    <Route exact path="/" element={<VoiceAssistant/>}/>
+    <Route exact path="/" element={<Home/>}/>
   </Routes>
   </HashRouter>
 );
